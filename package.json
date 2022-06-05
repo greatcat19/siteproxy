@@ -20,6 +20,7 @@
   "dependencies": {
     "cookiejar": "^2.1.2",
     "express": "^4.17.1",
+    "express-basic-auth": "^1.2.1",
     "http-proxy-middleware": "^0.20.0",
     "iconv-lite": "^0.6.2",
     "pako": "^1.0.11",

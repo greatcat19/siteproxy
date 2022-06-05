@@ -4,10 +4,11 @@ const path = require('path')
 const fs = require('fs')
 let app = express()
 var Proxy = require('./Proxy')
+const basicAuth = require('express-basic-auth')
 let { blockedSites, urlModify, httpprefix, serverName, port, locationReplaceMap302, regReplaceMap, siteSpecificReplace, pathReplace } = require('./config')
 
 let cookieDomainRewrite = serverName
-let proxy = Proxy({ ProxyMiddleware, blockedSites, urlModify, httpprefix, serverName, port, cookieDomainRewrite, locationReplaceMap302, regReplaceMap, siteSpecificReplace, pathReplace})
+let proxy = Proxy({ ProxyMiddleware, blockedSites, urlModify, httpprefix, serverName, port, cookieDomainRewrite, locationReplaceMap302, regReplaceMap, siteSpecificReplace, pathReplace })
 
 const middle1 = (req, res, next) => {
     let timestr = new Date().toISOString()
@@ -28,12 +29,24 @@ const middle1 = (req, res, next) => {
         res.status(200).send(body)
         return
     } else
-    if (fs.existsSync(dirPath) && !fs.lstatSync(dirPath).isDirectory()) {
-        body = fs.readFileSync(dirPath)
-        return res.status(200).send(body)
-    }
+        if (fs.existsSync(dirPath) && !fs.lstatSync(dirPath).isDirectory()) {
+            body = fs.readFileSync(dirPath)
+            return res.status(200).send(body)
+        }
     next()
 }
+
+const http_basic_username = process.env['HTTP_BASIC_USERNAME'];
+if (http_basic_username) {
+    const password = process.env['HTTP_BASIC_PASSWORD'];
+    const users = {};
+    users[http_basic_username] = password;
+    app.use(basicAuth({
+        users,
+        challenge: true,
+    }))
+}
+
 app.use(middle1)
 app.use(proxy)
 
